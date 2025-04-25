@@ -1,0 +1,6 @@
+framework module Pods_PeraKingUtilsTool_Tests {
+  umbrella header "Pods-PeraKingUtilsTool_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}
