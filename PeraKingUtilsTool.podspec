@@ -31,14 +31,14 @@ TODO: Add long description of the pod here.
  # 修改支持的 iOS 版本为 14.0 及以上
   s.ios.deployment_target = '14.0'
   s.swift_version = '5.0'
-  s.source_files = 'PeraKingUtils/Classes/**/*'
+  s.source_files = 'PeraKingUtilsTool/Classes/**/*'
    # 编译选项（支持混合语言）
   s.pod_target_xcconfig = {
     'SWIFT_VERSION' => '5.0', # 显式指定 Swift 版本
     'OTHER_LDFLAGS' => '$(inherited) -l"c++"' # 解决链接器问题
   }
-  s.public_header_files = 'PeraKingUtils/Classes/**/*.h' # 包含公开的 Objective-C 头文件
-  s.private_header_files = 'PeraKingUtils/Classes/**/Private/*.h' # 私有头文件（可选）
+  s.public_header_files = 'PeraKingUtilsTool/Classes/**/*.h' # 包含公开的 Objective-C 头文件
+  s.private_header_files = 'PeraKingUtilsTool/Classes/**/Private/*.h' # 私有头文件（可选）
   s.prefix_header_file = false # 禁用默认前缀头文件
 
   # 添加依赖的系统框架 UIKit
