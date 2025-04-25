@@ -20,10 +20,6 @@ it, simply add the following line to your Podfile:
 pod 'PeraKingUtilsTool'
 ```
 
-## Author
-
-CareVoiceOS-SDK-Token, 841766048@qq.com
-
 ## License
 
 PeraKingUtilsTool is available under the MIT license. See the LICENSE file for more info.
