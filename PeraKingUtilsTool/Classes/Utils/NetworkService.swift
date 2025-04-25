@@ -86,7 +86,11 @@ public final class NetworkService {
                     if let decodedResponse = BaseResponse<T>.deserialize(from:  dictionary) {
                         if decodedResponse.downwards == 0 {
                             DispatchQueue.main.async {
-                                SVProgressHUD.dismiss()
+                                if target.path == "/munarian/attracted" {
+                                    SVProgressHUD.showSuccess(withStatus: decodedResponse.panic)
+                                } else {
+                                    SVProgressHUD.dismiss()
+                                }
                                 completion(.success(decodedResponse.block))
                             }
                         } else if decodedResponse.downwards == -2 {
