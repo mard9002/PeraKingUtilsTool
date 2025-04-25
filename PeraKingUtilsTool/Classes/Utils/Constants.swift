@@ -139,12 +139,12 @@ import UIKit
     /// API相关常量
     @objc public class APIURL: NSObject {
         #if DEBUG
-        @objc public static let baseURL = "http://8.220.140.188:9793/perakingapi"
+        @objc public static var baseURL = "http://8.220.140.188:9793/perakingapi"
         #else
-        @objc public static let baseURL = "http://8.220.140.188:9793/"
+        @objc public static var baseURL = "http://8.220.140.188:9793/"
         #endif
         
-        @objc public static let baseH5Url = "http://8.220.140.188:9793"
+        @objc public static var baseH5Url = "http://8.220.140.188:9793"
         
         @objc public static let timeout: TimeInterval = 30
         

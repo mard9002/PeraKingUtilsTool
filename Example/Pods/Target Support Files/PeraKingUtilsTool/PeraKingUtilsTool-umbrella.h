@@ -10,6 +10,8 @@
 #endif
 #endif
 
+#import "ATVerificationCodeView.h"
+#import "ATVerificationCodeViewController.h"
 
 FOUNDATION_EXPORT double PeraKingUtilsToolVersionNumber;
 FOUNDATION_EXPORT const unsigned char PeraKingUtilsToolVersionString[];

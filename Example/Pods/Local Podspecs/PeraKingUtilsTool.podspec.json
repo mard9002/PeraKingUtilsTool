@@ -19,13 +19,13 @@
     "ios": "14.0"
   },
   "swift_versions": "5.0",
-  "source_files": "PeraKingUtils/Classes/**/*",
+  "source_files": "PeraKingUtilsTool/Classes/**/*",
   "pod_target_xcconfig": {
     "SWIFT_VERSION": "5.0",
     "OTHER_LDFLAGS": "$(inherited) -l\"c++\""
   },
-  "public_header_files": "PeraKingUtils/Classes/**/*.h",
-  "private_header_files": "PeraKingUtils/Classes/**/Private/*.h",
+  "public_header_files": "PeraKingUtilsTool/Classes/**/*.h",
+  "private_header_files": "PeraKingUtilsTool/Classes/**/Private/*.h",
   "prefix_header_file": false,
   "frameworks": "UIKit",
   "dependencies": {
