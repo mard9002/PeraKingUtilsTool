@@ -28,7 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0B39D397512FB9B1DB186607 /* PeraKingUtilsTool.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = PeraKingUtilsTool.podspec; path = ../PeraKingUtilsTool.podspec; sourceTree = "<group>"; };
+		0B39D397512FB9B1DB186607 /* PeraKingUtilsTool.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = PeraKingUtilsTool.podspec; path = ../PeraKingUtilsTool.podspec; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		47C372192D47B5EE844A2BF6 /* Pods_PeraKingUtilsTool_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PeraKingUtilsTool_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD01AFB9204008FA782 /* PeraKingUtilsTool_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PeraKingUtilsTool_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -40,6 +40,7 @@
 		607FACE51AFB9204008FA782 /* PeraKingUtilsTool_Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PeraKingUtilsTool_Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACEA1AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACEB1AFB9204008FA782 /* Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests.swift; sourceTree = "<group>"; };
+		65DB01672DBB87930042668B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		78AFED82ACE4D2644FD88F79 /* Pods_PeraKingUtilsTool_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_PeraKingUtilsTool_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		86F7BF812B8D93EAB76402C0 /* Pods-PeraKingUtilsTool_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PeraKingUtilsTool_Tests.debug.xcconfig"; path = "Target Support Files/Pods-PeraKingUtilsTool_Tests/Pods-PeraKingUtilsTool_Tests.debug.xcconfig"; sourceTree = "<group>"; };
 		A83A8F76DEFF1E44BAEF0FE3 /* Pods-PeraKingUtilsTool_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PeraKingUtilsTool_Tests.release.xcconfig"; path = "Target Support Files/Pods-PeraKingUtilsTool_Tests/Pods-PeraKingUtilsTool_Tests.release.xcconfig"; sourceTree = "<group>"; };
@@ -143,6 +144,7 @@
 		607FACF51AFB993E008FA782 /* Podspec Metadata */ = {
 			isa = PBXGroup;
 			children = (
+				65DB01672DBB87930042668B /* PrivacyInfo.xcprivacy */,
 				0B39D397512FB9B1DB186607 /* PeraKingUtilsTool.podspec */,
 				FA0CB24A1D63898994A27F30 /* README.md */,
 				E43AA74543988BF899DF0F0D /* LICENSE */,
