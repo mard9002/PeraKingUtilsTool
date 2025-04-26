@@ -97,19 +97,27 @@ public final class NetworkService {
                             NotificationCenter.default.post(name: Constants.Notifications.switchLogin, object: nil)
                         }
                         else  {
-                            let paths = [
-                                "/munarian/joyous",
-                                "/munarian/person",
-                                "/munarian/upright",
-                                "/munarian/would",
-                                "/munarian/giant",
-                                "/munarian/giant",
-                            ]
-                            DispatchQueue.main.async {
-                                if !paths.contains(target.path) {
+                            if target.path == "/munarian/attracted" {
+                                DispatchQueue.main.async {
                                     SVProgressHUD.showInfo(withStatus: decodedResponse.panic)
+                                    SVProgressHUD.dismiss(withDelay: 3.0)
+                                }
+                            } else {
+                                let paths = [
+                                    "/munarian/joyous",
+                                    "/munarian/person",
+                                    "/munarian/upright",
+                                    "/munarian/would",
+                                    "/munarian/giant",
+                                    "/munarian/giant",
+                                ]
+                                DispatchQueue.main.async {
+                                    if !paths.contains(target.path) {
+                                        SVProgressHUD.showInfo(withStatus: decodedResponse.panic)
+                                    }
                                 }
                             }
+                            
                         }
                     } else {
                         DispatchQueue.main.async {

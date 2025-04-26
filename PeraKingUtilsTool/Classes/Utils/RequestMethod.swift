@@ -484,7 +484,7 @@ extension ATApiServer {
                 callback(true)
             case .failure(let failure):
                 callback(false)
-                SVProgressHUD.showError(withStatus: failure.localizedDescription)
+//                SVProgressHUD.showError(withStatus: failure.localizedDescription)
             }
         }
     }
