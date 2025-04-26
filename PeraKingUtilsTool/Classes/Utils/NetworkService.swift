@@ -88,6 +88,7 @@ public final class NetworkService {
                             DispatchQueue.main.async {
                                 if target.path == "/munarian/attracted" {
                                     SVProgressHUD.showSuccess(withStatus: decodedResponse.panic)
+                                    SVProgressHUD.dismiss(withDelay: 3.0)
                                 } else {
                                     SVProgressHUD.dismiss()
                                 }
