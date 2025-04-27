@@ -181,8 +181,12 @@ public class WebViewViewController: UIViewController {
     // MARK: - 导航按钮操作
     
     @objc private func closeButtonTapped() {
-        self.dismiss(animated: true, completion: nil)
-        self.navigationController?.popViewController(animated: true)
+        if webView.canGoBack {
+            webView.goBack()
+        } else {
+            self.dismiss(animated: true, completion: nil)
+            self.navigationController?.popToRootViewController(animated: true)
+        }
     }
     
     @objc private func refreshButtonTapped() {
