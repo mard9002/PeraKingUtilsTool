@@ -1,6 +1,7 @@
 import UIKit
 import Photos
 import AVFoundation
+import SVProgressHUD
 
 /// 媒体选择类型
 public enum MediaPickerType {
@@ -9,6 +10,7 @@ public enum MediaPickerType {
     /// 相册选择
     case photoLibrary
 }
+typealias ImageCompressionCompletion = (UIImage?) -> Void
 
 /// 相机位置选择
 public enum CameraPosition {
@@ -252,37 +254,60 @@ public class MediaPickerManager: NSObject {
     }
     
     /// 压缩图像到指定大小
-    private func compressImage(_ image: UIImage) -> UIImage {
-        let maxSize: CGFloat = maxImageSizeKB * 1024 // 转为字节
-        
-        var compression: CGFloat = 1.0
-        let step: CGFloat = 0.05
-        var data = image.jpegData(compressionQuality: compression)!
-        
-        // 先尝试JPEG压缩
-        while data.count > Int(maxSize) && compression > step {
-            compression -= step
-            data = image.jpegData(compressionQuality: compression)!
-        }
-        
-        // 如果JPEG压缩不足，则尝试缩小尺寸
-        if data.count > Int(maxSize) {
-            var targetSize = image.size
-            while data.count > Int(maxSize) {
-                targetSize = CGSize(width: targetSize.width * 0.9, height: targetSize.height * 0.9)
-                
-                UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
-                image.draw(in: CGRect(origin: .zero, size: targetSize))
-                let newImage = UIGraphicsGetImageFromCurrentImageContext()!
-                UIGraphicsEndImageContext()
-                
-                data = newImage.jpegData(compressionQuality: compression)!
+    private func compressImage(_ image: UIImage, maxSizeKB: Int = 800, completion: @escaping ImageCompressionCompletion) {
+        // 将压缩任务放到后台队列
+        DispatchQueue.global().async {
+            let maxSizeBytes = maxSizeKB * 1024 // 转为字节
+            
+            // 压缩参数
+            var compression: CGFloat = 1.0
+            let compressionStep: CGFloat = 0.05
+            
+            // 尝试JPEG压缩
+            var compressedImage = image
+            var compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+            
+            // 逐步降低压缩质量，直到图片大小小于目标大小
+            while compressedData.count > maxSizeBytes && compression > 0 {
+                compression -= compressionStep
+                if compression < 0 {
+                    compression = 0
+                }
+                compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
             }
             
-            return UIImage(data: data)!
+            // 如果JPEG压缩后仍超出目标大小，则尝试缩小图片尺寸
+            if compressedData.count > maxSizeBytes {
+                var targetSize = compressedImage.size
+                
+                // 逐步缩小图片尺寸，直到图片大小小于目标大小
+                while compressedData.count > maxSizeBytes && (targetSize.width > 1 || targetSize.height > 1) {
+                    targetSize.width *= 0.9
+                    targetSize.height *= 0.9
+                    
+                    // 创建新的缩略图
+                    UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+                    compressedImage.draw(in: CGRect(origin: .zero, size: targetSize))
+                    if let newImage = UIGraphicsGetImageFromCurrentImageContext() {
+                        compressedImage = newImage
+                        UIGraphicsEndImageContext()
+                        compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+                    } else {
+                        UIGraphicsEndImageContext()
+                        break // 避免无限循环
+                    }
+                }
+            }
+            
+            // 将结果返回主线程
+            DispatchQueue.main.async {
+                if let finalImage = UIImage(data: compressedData) {
+                    completion(finalImage)
+                } else {
+                    completion(image) // 如果压缩失败，返回原始图片
+                }
+            }
         }
-        
-        return UIImage(data: data)!
     }
     
     /// 显示权限提示
@@ -333,8 +358,12 @@ extension MediaPickerManager: UIImagePickerControllerDelegate, UINavigationContr
             
             if let selectedImage = image {
                 // 压缩图片
-                let compressedImage = self.compressImage(selectedImage)
-                self.completion?(compressedImage, nil)
+                SVProgressHUD.show()
+                self.compressImage(selectedImage) { compressedImage in
+                    SVProgressHUD.dismiss()
+                    self.completion?(compressedImage, nil)
+                }
+//                let compressedImage = self.compressImage(selectedImage)
             } else {
                 let error = NSError(domain: "com.peraKing.MediaPicker", code: 500, userInfo: [NSLocalizedDescriptionKey: "未能获取所选图片"])
                 self.completion?(nil, error)

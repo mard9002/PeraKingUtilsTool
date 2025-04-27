@@ -21,9 +21,9 @@ public class LoginTimeManager {
     /// 保存当前登录时间（时间戳，毫秒）
     public func saveLoginTime() {
         // 获取当前时间戳（毫秒）
-        let currentTime = Date().timeIntervalSince1970 * 1000
+        let currentTime = Int(Date().timeIntervalSince1970 * 1000)
         // 从 UserDefaults 中读取历史登录时间
-        var loginTimeHistory: [Double] = UserDefaults.standard.array(forKey: loginTimeKey) as? [Double] ?? []
+        var loginTimeHistory: [Int] = UserDefaults.standard.array(forKey: loginTimeKey) as? [Int] ?? []
         // 添加当前时间戳到历史记录中
         loginTimeHistory.append(currentTime)
         // 保存更新后的历史记录
@@ -32,7 +32,7 @@ public class LoginTimeManager {
     }
     
     /// 获取上次登录时间（时间戳，毫秒）
-    public func getLastLoginTime() -> Double? {
+    public func getLastLoginTime() -> Int? {
         // 从 UserDefaults 中读取历史登录时间
         guard let loginTimeHistory = UserDefaults.standard.array(forKey: loginTimeKey) as? [Double] else {
             print("没有登录时间历史")
@@ -43,10 +43,10 @@ public class LoginTimeManager {
         if loginTimeHistory.count >= 2 {
             let lastLoginTime = loginTimeHistory[loginTimeHistory.count - 2]
             print("上次登录时间：\(lastLoginTime)")
-            return lastLoginTime
+            return Int(lastLoginTime)
         } else if let lastLoginTime = loginTimeHistory.last {
             print("没有上次登录时间，返回当前登录时间：\(lastLoginTime)")
-            return lastLoginTime
+            return Int(lastLoginTime)
         } else {
             print("登录时间历史为空")
             return nil

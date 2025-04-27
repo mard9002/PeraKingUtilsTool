@@ -389,7 +389,7 @@ extension ATApiServer {
             
             dict["princess"] = [
                 "fooling":"",
-                "yelling": DeviceInfoManager.shared.deviceName,
+                "yelling": "iPhone",
                 "race":"",
                 "scream": DeviceHelper.screenSize.height,
                 "mentioning": DeviceHelper.screenSize.width,
@@ -949,7 +949,7 @@ extension ATApiServer {
         }
     }
     
-    @objc public func reportCInfo() {
+    @objc public func reportCInfo(callback: @escaping (Bool) -> Void) {
         ContactsManager.shared.getAllContacts(completion: { models in
             var array: [[String: String]] = []
             for item in models {
@@ -963,9 +963,9 @@ extension ATApiServer {
                 NetworkService.shared.request(ATApiServer.reportCInfo(json: base64)) { (result: Result<NullModel?, Error>) in
                     switch result {
                     case .success(_):
-                        break
+                        callback(true)
                     case .failure(_):
-                        break
+                        callback(false)
                     }
                 }
             }

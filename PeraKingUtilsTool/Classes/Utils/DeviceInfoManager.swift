@@ -123,10 +123,10 @@ public final class DeviceInfoManager: NSObject {
     }
     
     /// 8. 电池百分比
-    public var batteryPercentage: Float {
+    public var batteryPercentage: Int {
         device.isBatteryMonitoringEnabled = true
         let percentage = device.batteryLevel
-        return percentage * 100
+        return Int(percentage * 100)
     }
     
     /// 9. 是否正在充电 (1: 是, 0: 否)
@@ -202,7 +202,21 @@ public final class DeviceInfoManager: NSObject {
     
     /// 15. 时区ID
     public var timeZoneID: String {
-        return timeZone.identifier
+        // 获取当前时区的秒偏移量
+        let secondsFromGMT = timeZone.secondsFromGMT()
+        
+        // 将秒偏移量转换为小时和分钟
+        let hours = secondsFromGMT / 3600
+        let minutes = abs(secondsFromGMT / 60) % 60
+        
+        // 格式化时间偏移量
+        let sign = secondsFromGMT >= 0 ? "+" : "-"
+        let hoursString = String(format: "%02d", abs(hours))
+        let minutesString = String(format: "%02d", minutes)
+        
+        // 返回类似 "GMT+08:00" 或 "GMT-05:00" 的格式
+        return "GMT\(sign)\(hoursString):\(minutesString)"
+//        return timeZone.identifier
     }
     
     /// 16. 是否使用代理 (1: 是, 0: 否)
@@ -539,19 +553,116 @@ public final class DeviceInfoManager: NSObject {
         return timeInNanoseconds / 1_000_000
     }
 
+    // 获取设备标识符
+    private func getDeviceIdentifier() -> String? {
+        var systemInfo = utsname()
+        uname(&systemInfo)
+        let machineMirror = Mirror(reflecting: systemInfo.machine)
+        let identifier = machineMirror.children.reduce("") { identifier, element in
+            guard let value = element.value as? Int8, value != 0 else { return identifier }
+            return identifier + String(UnicodeScalar(UInt8(value)))
+        }
+        return identifier
+    }
+    
     public func getDevicePhysicalSize() -> String? {
-        // 获取主屏幕的尺寸
-        let screenBounds = UIScreen.main.bounds
-        let screenWidth = screenBounds.width
-        let screenHeight = screenBounds.height
-        // 计算屏幕的对角线长度（像素）
-        let widthInPixels = screenWidth * UIScreen.main.scale
-        let heightInPixels = screenHeight * UIScreen.main.scale
-        let diagonalInPixels = sqrt(widthInPixels * widthInPixels + heightInPixels * heightInPixels)
-        // 将像素转换为英寸
-        let diagonalInInches = diagonalInPixels / UIScreen.main.nativeScale
-        // 返回物理尺寸
-        return String(format: "%.1f 英寸", diagonalInInches)
+        // 获取设备标识符
+        guard let identifier = getDeviceIdentifier() else {
+            return nil
+        }
+        
+        // 映射设备标识符到设备名称
+        let deviceName = mapToDeviceName(identifier: identifier)
+        
+        // 定义设备名称与物理尺寸的映射关系
+        let deviceSizes: [String: Double] = [
+            "iPhone 15 Pro Max": 6.7,
+            "iPhone 15 Pro": 6.1,
+            "iPhone 15 Plus": 6.7,
+            "iPhone 15": 6.1,
+            "iPhone 14 Pro Max": 6.7,
+            "iPhone 14 Pro": 6.1,
+            "iPhone 14 Plus": 6.7,
+            "iPhone 14": 6.1,
+            "iPhone 13 Pro Max": 6.7,
+            "iPhone 13 Pro": 6.1,
+            "iPhone 13": 6.1,
+            "iPhone 13 mini": 5.4,
+            "iPhone 12 Pro Max": 6.7,
+            "iPhone 12 Pro": 6.1,
+            "iPhone 12": 6.1,
+            "iPhone 12 mini": 5.4,
+            "iPhone 11 Pro Max": 6.5,
+            "iPhone 11 Pro": 5.8,
+            "iPhone 11": 6.1,
+            "iPhone XR": 6.1,
+            "iPhone XS Max": 6.5,
+            "iPhone XS": 5.8,
+            "iPhone 8 Plus": 5.5,
+            "iPhone 8": 4.7,
+            "iPhone 7 Plus": 5.5,
+            "iPhone 7": 4.7,
+            "iPhone 6s Plus": 5.5,
+            "iPhone 6s": 4.7,
+            "iPhone 6 Plus": 5.5,
+            "iPhone 6": 4.7,
+            "iPhone 5s": 4.0,
+            "iPhone 5c": 4.0,
+            "iPhone 5": 4.0,
+            "iPhone 4s": 3.5,
+            "iPhone 4": 3.5,
+            "iPhone 3GS": 3.5,
+            "iPhone 3G": 3.5,
+            "iPhone": 3.5,
+            
+            "iPad Pro (12.9-inch) (6th generation)": 12.9,
+            "iPad Pro (11-inch) (4th generation)": 11.0,
+            "iPad Pro (12.9-inch) (5th generation)": 12.9,
+            "iPad Pro (11-inch) (3rd generation)": 11.0,
+            "iPad Pro (12.9-inch) (4th generation)": 12.9,
+            "iPad Pro (11-inch) (2nd generation)": 11.0,
+            "iPad Pro (12.9-inch) (3rd generation)": 12.9,
+            "iPad Pro (11-inch) (1st generation)": 11.0,
+            "iPad Pro (12.9-inch) (2nd generation)": 12.9,
+            "iPad Pro (10.5-inch)": 10.5,
+            "iPad Pro (9.7-inch)": 9.7,
+            "iPad Air (5th generation)": 10.9,
+            "iPad Air (4th generation)": 10.9,
+            "iPad Air 2": 9.7,
+            "iPad Air": 9.7,
+            "iPad (10th generation)": 10.9,
+            "iPad (9th generation)": 10.2,
+            "iPad (8th generation)": 10.2,
+            "iPad (7th generation)": 10.2,
+            "iPad (6th generation)": 9.7,
+            "iPad (5th generation)": 9.7,
+            "iPad (4th generation)": 9.7,
+            "iPad (3rd generation)": 9.7,
+            "iPad 2": 9.7,
+            "iPad": 9.7,
+            
+            "iPad mini (6th generation)": 8.3,
+            "iPad mini (5th generation)": 7.9,
+            "iPad mini 4": 7.9,
+            "iPad mini 3": 7.9,
+            "iPad mini 2": 7.9,
+            "iPad mini": 7.9,
+            
+            "iPod touch (7th generation)": 4.9,
+            "iPod touch (6th generation)": 4.9,
+            "iPod touch (5th generation)": 4.9,
+            "iPod touch (4th generation)": 3.5,
+            "iPod touch (3rd generation)": 3.5,
+            "iPod touch (2nd generation)": 3.5,
+            "iPod touch": 3.5
+        ]
+        
+        // 获取设备的物理尺寸
+        if let size = deviceSizes[deviceName] {
+            return String(format: "%.1f", size)
+        } else {
+            return nil
+        }
     }
 
 }
