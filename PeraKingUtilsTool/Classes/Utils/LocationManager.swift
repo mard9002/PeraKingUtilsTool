@@ -193,7 +193,7 @@ public final class LocationManager: NSObject {
     private func saveLocationToCache(_ location: CLLocation) {
         userDefaults.set(String(location.coordinate.latitude), forKey: lastLocationLatitudeKey)
         userDefaults.set(String(location.coordinate.longitude), forKey: lastLocationLongitudeKey)
-        userDefaults.set(Date().timeIntervalSince1970, forKey: lastLocationTimestampKey)
+        userDefaults.set(Int(Date().timeIntervalSince1970), forKey: lastLocationTimestampKey)
         userDefaults.synchronize()
     }
     

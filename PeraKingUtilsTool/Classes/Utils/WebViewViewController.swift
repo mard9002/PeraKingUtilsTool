@@ -224,7 +224,7 @@ public class WebViewViewController: UIViewController {
         print("风控埋点: \(parameters)")
         // 在这里实现埋点逻辑
         if let par = parameters as? [String], par.count > 1 {
-            API.share.event(EventModel(waste: par[0], sapiist: "10", gym: "", dropped: "\(Date().timeIntervalSince1970)", nowhere: "\(Date().timeIntervalSince1970)")) { _ in
+            API.share.event(EventModel(waste: par[0], sapiist: "10", gym: "", dropped: "\(Int(Date().timeIntervalSince1970))", nowhere: "\(Int(Date().timeIntervalSince1970))")) { _ in
             }
         }
         

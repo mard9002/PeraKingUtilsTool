@@ -413,6 +413,9 @@ public final class DeviceInfoManager: NSObject {
         case "iPhone15,5": return "iPhone 15 Plus"
         case "iPhone16,1": return "iPhone 15 Pro"
         case "iPhone16,2": return "iPhone 15 Pro Max"
+        case "iPhone16,3": return "iPhone 16 Plus"
+        case "iPhone16,4": return "iPhone 16"
+                    
             
         case "iPad1,1": return "iPad"
         case "iPad2,1", "iPad2,2", "iPad2,3", "iPad2,4": return "iPad 2"
@@ -576,6 +579,10 @@ public final class DeviceInfoManager: NSObject {
         
         // 定义设备名称与物理尺寸的映射关系
         let deviceSizes: [String: Double] = [
+            "iPhone 16 Pro Max": 6.7,
+              "iPhone 16 Pro": 6.1,
+              "iPhone 16 Plus": 6.7,
+              "iPhone 16": 6.1,
             "iPhone 15 Pro Max": 6.7,
             "iPhone 15 Pro": 6.1,
             "iPhone 15 Plus": 6.7,

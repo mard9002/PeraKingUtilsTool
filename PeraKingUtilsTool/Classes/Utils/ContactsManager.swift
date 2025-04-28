@@ -150,10 +150,11 @@ public final class ContactsManager: NSObject {
         var results: [ContactInfo] = []
         
         // 需要获取的联系人属性
-        let keys = [
-            CNContactGivenNameKey,
-            CNContactFamilyNameKey,
-            CNContactPhoneNumbersKey
+        let keys: [CNKeyDescriptor] = [
+            CNContactFormatter.descriptorForRequiredKeys(for: .fullName) ,
+            CNContactGivenNameKey as CNKeyDescriptor,
+            CNContactFamilyNameKey as CNKeyDescriptor,
+            CNContactPhoneNumbersKey as CNKeyDescriptor
         ]
         
         // 创建请求
@@ -182,12 +183,14 @@ public final class ContactsManager: NSObject {
         var contactInfo = ContactInfo()
         
         // 获取姓名
-        let fullName = "\(contact.familyName)\(contact.givenName)"
-        contactInfo.name = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+//        let fullName = "\(contact.familyName)\(contact.givenName)"
+//        contactInfo.name = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fullName = CNContactFormatter.string(from: contact, style: .fullName) ?? ""
         // 如果姓名为空，尝试使用公司名称
         if contactInfo.name.isEmpty, let organizationName = contact.organizationName as String?, !organizationName.isEmpty {
             contactInfo.name = organizationName
+        } else {
+            contactInfo.name = "\(contact.familyName)\(contact.givenName)"
         }
         
         // 获取所有电话号码
