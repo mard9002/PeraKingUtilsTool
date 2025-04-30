@@ -18,6 +18,7 @@ public class WebViewViewController: UIViewController {
     private var urlString: String
     private var observation: NSKeyValueObservation?
     
+    public var isBackRoot = false
     // MARK: - 初始化
     
     public init(urlString: String) {
@@ -185,7 +186,12 @@ public class WebViewViewController: UIViewController {
             webView.goBack()
         } else {
             self.dismiss(animated: true, completion: nil)
-            self.navigationController?.popToRootViewController(animated: true)
+            if self.isBackRoot {
+                self.navigationController?.popToRootViewController(animated: true)
+            } else {
+                self.navigationController?.popViewController(animated: true)
+            }
+            
         }
     }
     

@@ -254,61 +254,120 @@ public class MediaPickerManager: NSObject {
     }
     
     /// 压缩图像到指定大小
-    private func compressImage(_ image: UIImage, maxSizeKB: Int = 800, completion: @escaping ImageCompressionCompletion) {
-        // 将压缩任务放到后台队列
-        DispatchQueue.global().async {
-            let maxSizeBytes = maxSizeKB * 1024 // 转为字节
-            
-            // 压缩参数
-            var compression: CGFloat = 1.0
-            let compressionStep: CGFloat = 0.05
-            
-            // 尝试JPEG压缩
-            var compressedImage = image
-            var compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
-            
-            // 逐步降低压缩质量，直到图片大小小于目标大小
-            while compressedData.count > maxSizeBytes && compression > 0 {
-                compression -= compressionStep
-                if compression < 0 {
-                    compression = 0
-                }
-                compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+//    private func compressImage(_ image: UIImage, maxSizeKB: Int = 800, completion: @escaping ImageCompressionCompletion) {
+//        // 将压缩任务放到后台队列
+//        DispatchQueue.global().async {
+//            let maxSizeBytes = maxSizeKB * 1024 // 转为字节
+//            
+//            // 压缩参数
+//            var compression: CGFloat = 1.0
+//            let compressionStep: CGFloat = 0.05
+//            
+//            // 尝试JPEG压缩
+//            var compressedImage = image
+//            var compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+//            
+//            // 逐步降低压缩质量，直到图片大小小于目标大小
+//            while compressedData.count > maxSizeBytes && compression > 0 {
+//                compression -= compressionStep
+//                if compression < 0 {
+//                    compression = 0
+//                }
+//                compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+//            }
+//            
+//            // 如果JPEG压缩后仍超出目标大小，则尝试缩小图片尺寸
+//            if compressedData.count > maxSizeBytes {
+//                var targetSize = compressedImage.size
+//                
+//                // 逐步缩小图片尺寸，直到图片大小小于目标大小
+//                while compressedData.count > maxSizeBytes && (targetSize.width > 1 || targetSize.height > 1) {
+//                    targetSize.width *= 0.9
+//                    targetSize.height *= 0.9
+//                    
+//                    // 创建新的缩略图
+//                    UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
+//                    compressedImage.draw(in: CGRect(origin: .zero, size: targetSize))
+//                    if let newImage = UIGraphicsGetImageFromCurrentImageContext() {
+//                        compressedImage = newImage
+//                        UIGraphicsEndImageContext()
+//                        compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+//                    } else {
+//                        UIGraphicsEndImageContext()
+//                        break // 避免无限循环
+//                    }
+//                }
+//            }
+//            
+//            // 将结果返回主线程
+//            DispatchQueue.main.async {
+//                if let finalImage = UIImage(data: compressedData) {
+//                    completion(finalImage)
+//                } else {
+//                    completion(image) // 如果压缩失败，返回原始图片
+//                }
+//            }
+//        }
+//    }
+    
+    private func compressImage(_ image: UIImage,
+                             toByte maxLength: Int,
+                             completion: @escaping (UIImage) -> Void) {
+        // 异步处理避免阻塞主线程
+        DispatchQueue.global(qos: .userInitiated).async {
+            var compression: CGFloat = 1
+            guard var data = image.jpegData(compressionQuality: compression) else {
+                DispatchQueue.main.async { completion(image) }
+                return
             }
             
-            // 如果JPEG压缩后仍超出目标大小，则尝试缩小图片尺寸
-            if compressedData.count > maxSizeBytes {
-                var targetSize = compressedImage.size
-                
-                // 逐步缩小图片尺寸，直到图片大小小于目标大小
-                while compressedData.count > maxSizeBytes && (targetSize.width > 1 || targetSize.height > 1) {
-                    targetSize.width *= 0.9
-                    targetSize.height *= 0.9
+            // 第一级压缩：质量压缩
+            if data.count > maxLength {
+                var max: CGFloat = 1
+                var min: CGFloat = 0
+                for _ in 0..<6 {
+                    compression = (max + min) / 2
+                    guard let newData = image.jpegData(compressionQuality: compression) else { break }
+                    data = newData
                     
-                    // 创建新的缩略图
-                    UIGraphicsBeginImageContextWithOptions(targetSize, false, 0.0)
-                    compressedImage.draw(in: CGRect(origin: .zero, size: targetSize))
-                    if let newImage = UIGraphicsGetImageFromCurrentImageContext() {
-                        compressedImage = newImage
-                        UIGraphicsEndImageContext()
-                        compressedData = compressedImage.jpegData(compressionQuality: compression) ?? Data()
+                    if data.count < Int(Double(maxLength) * 0.9) {
+                        min = compression
+                    } else if data.count > maxLength {
+                        max = compression
                     } else {
-                        UIGraphicsEndImageContext()
-                        break // 避免无限循环
+                        break
                     }
                 }
             }
             
-            // 将结果返回主线程
-            DispatchQueue.main.async {
-                if let finalImage = UIImage(data: compressedData) {
-                    completion(finalImage)
-                } else {
-                    completion(image) // 如果压缩失败，返回原始图片
+            // 第二级压缩：尺寸压缩
+            var resultImage = UIImage(data: data) ?? image
+            var lastDataLength = 0
+            while data.count > maxLength && data.count != lastDataLength {
+                lastDataLength = data.count
+                let ratio = CGFloat(maxLength) / CGFloat(data.count)
+                let newSize = CGSize(
+                    width: resultImage.size.width * sqrt(ratio),
+                    height: resultImage.size.height * sqrt(ratio)
+                )
+                
+                // 使用现代渲染API（iOS 10+）
+                let renderer = UIGraphicsImageRenderer(size: newSize)
+                resultImage = renderer.image { _ in
+                    resultImage.draw(in: CGRect(origin: .zero, size: newSize))
                 }
+                
+                guard let newData = resultImage.jpegData(compressionQuality: compression) else { break }
+                data = newData
+            }
+            
+            // 主线程回调[3]
+            DispatchQueue.main.async {
+                completion(resultImage)
             }
         }
     }
+
     
     /// 显示权限提示
     private func showPermissionAlert(for type: MediaPickerType, from viewController: UIViewController) {
@@ -359,7 +418,7 @@ extension MediaPickerManager: UIImagePickerControllerDelegate, UINavigationContr
             if let selectedImage = image {
                 // 压缩图片
                 SVProgressHUD.show()
-                self.compressImage(selectedImage) { compressedImage in
+                self.compressImage(selectedImage, toByte: 500 * 1024) { compressedImage in
                     SVProgressHUD.dismiss()
                     self.completion?(compressedImage, nil)
                 }

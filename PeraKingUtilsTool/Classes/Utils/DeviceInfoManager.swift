@@ -331,10 +331,7 @@ public final class DeviceInfoManager: NSObject {
     
     /// 24. IDFA
     public var idfa: String {
-        if ASIdentifierManager.shared().isAdvertisingTrackingEnabled {
-            return ASIdentifierManager.shared().advertisingIdentifier.uuidString
-        }
-        return "00000000-0000-0000-0000-000000000000"
+        return ASIdentifierManager.shared().advertisingIdentifier.uuidString
     }
     
     /// 25. 当前WiFi BSSID
