@@ -401,7 +401,7 @@ extension ATApiServer {
             ]
             
             dict["recently"] = [
-                "intimidated": DeviceInfoManager.shared.ipAddress,
+                "intimidated": DeviceInfoManager.shared.systemLocalIPv4Address(),
                 "naturally": [
                     [
                         "tens":  DeviceInfoManager.shared.wifiSSID,

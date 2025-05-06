@@ -296,48 +296,7 @@ public final class DeviceInfoManager: NSObject {
     
     /// 22. IP地址
     public var ipAddress: String {
-        var addresses = [String]()
-        var ifaddr: UnsafeMutablePointer<ifaddrs>?
-        
-        guard getifaddrs(&ifaddr) == 0 else { return "" }
-        defer { freeifaddrs(ifaddr) }
-        
-        var pointer = ifaddr
-        while pointer != nil {
-            defer { pointer = pointer?.pointee.ifa_next }
-            
-            let flags = Int32(pointer?.pointee.ifa_flags ?? 0)
-            let addr = pointer?.pointee.ifa_addr.pointee
-            
-            // 过滤无效接口 (跳过环回/未激活接口)
-            guard (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING),
-                  let saFamily = addr?.sa_family else {
-                continue
-            }
-            
-            // 处理 IPv4/IPv6
-            if saFamily == sa_family_t(AF_INET) || saFamily == sa_family_t(AF_INET6) {
-                var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                let sockaddr = pointer?.pointee.ifa_addr
-                
-                if getnameinfo(
-                    sockaddr,
-                    socklen_t(sockaddr?.pointee.sa_len ?? 0),
-                    &hostname,
-                    socklen_t(hostname.count),
-                    nil,
-                    0,
-                    NI_NUMERICHOST
-                ) == 0 {
-                    let ip = String(cString: hostname)
-                    if !ip.isEmpty {
-                        addresses.append(ip)
-                    }
-                }
-            }
-        }
-
-        return addresses.first { !$0.hasPrefix("fe80::") && !$0.hasPrefix("127.") } ?? ""
+        return ""
     }
     
     public func systemLocalIPv4Address() -> String {
