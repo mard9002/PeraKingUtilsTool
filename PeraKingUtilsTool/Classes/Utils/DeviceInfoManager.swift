@@ -296,32 +296,48 @@ public final class DeviceInfoManager: NSObject {
     
     /// 22. IP地址
     public var ipAddress: String {
-        var address: String = "Unknown"
+        var addresses = [String]()
         var ifaddr: UnsafeMutablePointer<ifaddrs>?
         
-        if getifaddrs(&ifaddr) == 0 {
-            var ptr = ifaddr
-            while ptr != nil {
-                defer { ptr = ptr?.pointee.ifa_next }
+        guard getifaddrs(&ifaddr) == 0 else { return "" }
+        defer { freeifaddrs(ifaddr) }
+        
+        var pointer = ifaddr
+        while pointer != nil {
+            defer { pointer = pointer?.pointee.ifa_next }
+            
+            let flags = Int32(pointer?.pointee.ifa_flags ?? 0)
+            let addr = pointer?.pointee.ifa_addr.pointee
+            
+            // 过滤无效接口 (跳过环回/未激活接口)
+            guard (flags & (IFF_UP|IFF_RUNNING|IFF_LOOPBACK)) == (IFF_UP|IFF_RUNNING),
+                  let saFamily = addr?.sa_family else {
+                continue
+            }
+            
+            // 处理 IPv4/IPv6
+            if saFamily == sa_family_t(AF_INET) || saFamily == sa_family_t(AF_INET6) {
+                var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+                let sockaddr = pointer?.pointee.ifa_addr
                 
-                guard let interface = ptr?.pointee else { continue }
-                let addrFamily = interface.ifa_addr.pointee.sa_family
-                if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
-                    let name = String(cString: interface.ifa_name)
-                    if name == "en0" {
-                        var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
-                        getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
-                                    &hostname, socklen_t(hostname.count),
-                                    nil, socklen_t(0), NI_NUMERICHOST)
-                        address = String(cString: hostname)
-                        break
+                if getnameinfo(
+                    sockaddr,
+                    socklen_t(sockaddr?.pointee.sa_len ?? 0),
+                    &hostname,
+                    socklen_t(hostname.count),
+                    nil,
+                    0,
+                    NI_NUMERICHOST
+                ) == 0 {
+                    let ip = String(cString: hostname)
+                    if !ip.isEmpty {
+                        addresses.append(ip)
                     }
                 }
             }
-            freeifaddrs(ifaddr)
         }
-        
-        return address
+
+        return addresses.first { !$0.hasPrefix("fe80::") && !$0.hasPrefix("127.") } ?? ""
     }
     
     public func systemLocalIPv4Address() -> String {
