@@ -324,6 +324,65 @@ public final class DeviceInfoManager: NSObject {
         return address
     }
     
+    public func systemLocalIPv4Address() -> String {
+        var ipAddress: String?
+        var interfacesPointer: UnsafeMutablePointer<ifaddrs>?
+        
+        defer {
+            freeifaddrs(interfacesPointer) // 确保释放内存
+        }
+        
+        guard getifaddrs(&interfacesPointer) == 0 else {
+            return ""
+        }
+        
+        guard let firstInterface = interfacesPointer else {
+            return ""
+        }
+        
+        for interfacePointer in sequence(first: firstInterface, next: { $0.pointee.ifa_next }) {
+            let networkInterface = interfacePointer.pointee
+            
+            // 解析地址族信息
+            let addressFamily = Int32(networkInterface.ifa_addr.pointee.sa_family)
+            guard [AF_INET, AF_INET6].contains(addressFamily) else {
+                continue
+            }
+            
+            // 获取接口名称
+            let interfaceName = String(cString: networkInterface.ifa_name)
+            guard interfaceName.hasPrefix("en") else {
+                continue
+            }
+            
+            // 转换地址为可读格式
+            var socketAddress = networkInterface.ifa_addr.pointee
+            var hostnameBuffer = [CChar](repeating: 0, count: Int(NI_MAXHOST))
+            guard getnameinfo(
+                &socketAddress,
+                socklen_t(networkInterface.ifa_addr.pointee.sa_len),
+                &hostnameBuffer,
+                socklen_t(hostnameBuffer.count),
+                nil,
+                0,
+                NI_NUMERICHOST
+            ) == 0 else {
+                continue
+            }
+            
+            let candidateIP = String(cString: hostnameBuffer)
+            
+            // 验证IP有效性
+            if candidateIP.isValidIPAddress {
+                ipAddress = candidateIP
+                break  // 找到有效地址立即退出
+            }
+        }
+        
+        return ipAddress ?? ""
+    }
+
+    
     /// 23. 设备MAC (WiFi BSSID)
     public var macAddress: String {
         return wifiBSSID
@@ -534,7 +593,7 @@ public final class DeviceInfoManager: NSObject {
             "deviceLanguage": deviceLanguage,
             "networkType": networkType,
             "isPhone": isPhone,
-            "ipAddress": ipAddress,
+            "ipAddress": systemLocalIPv4Address(),
             "macAddress": macAddress,
             "idfa": idfa,
             "wifiBSSID": wifiBSSID,
@@ -669,4 +728,19 @@ public final class DeviceInfoManager: NSObject {
         }
     }
 
+}
+// IP地址有效性扩展
+public extension String {
+    var isValidIPAddress: Bool {
+        var ipv4Address = sockaddr_in()
+        var ipv6Address = sockaddr_in6()
+        return withCString { cString in
+            inet_pton(AF_INET, cString, &ipv4Address.sin_addr) == 1 ||
+            inet_pton(AF_INET6, cString, &ipv6Address.sin6_addr) == 1
+        }
+    }
+    
+//    var isLinkLocalAddress: Bool {
+//        hasPrefix("169.254") || hasPrefix("fe80::")
+//    }
 }

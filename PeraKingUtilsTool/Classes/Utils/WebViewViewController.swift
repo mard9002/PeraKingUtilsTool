@@ -99,7 +99,7 @@ public class WebViewViewController: UIViewController {
     
     private func setupProgressView() {
         progressView = UIProgressView(progressViewStyle: .default)
-        progressView.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: 2)
+        progressView.frame = CGRect(x: 0, y: Constants.Screen.navBarWithStatusBarHeight, width: view.frame.width, height: 2)
         progressView.trackTintColor = UIColor.lightGray
         progressView.progressTintColor = UIColor.blue
         progressView.alpha = 0
