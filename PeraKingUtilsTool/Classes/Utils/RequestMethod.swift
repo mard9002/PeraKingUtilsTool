@@ -924,6 +924,18 @@ extension ATApiServer {
                 callback(false)
             }
         }
+        NetworkService.shared.requestBase(ATApiServer.reportRiskEvent(model: event)) { (result: Result<BaseResponse<NullModel>?, Error>) in
+            switch result {
+            case .success(let success):
+                if success?.downwards == 0 {
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+            case .failure(let failure):
+                callback(false)
+            }
+        }
     }
     
     @objc public func event(_ event: EventModel, callback: @escaping (Bool) -> Void) {

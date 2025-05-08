@@ -141,6 +141,83 @@ public final class NetworkService {
         }
     }
     
+    public func requestBase<T: SmartCodable, U: TargetType>(_ target: U, completion: @escaping (Result<BaseResponse<T>?, Error>) -> Void) {
+        let multiTarget = MultiTarget(target)
+        
+        provider.request(multiTarget, callbackQueue: queue) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let response):
+                do {
+                    // 检查是否有错误响应
+                    if self.isErrorStatusCode(response.statusCode) {
+                        let error = try self.parseErrorResponse(from: response)
+                        DispatchQueue.main.async {
+                            completion(.failure(error))
+                        }
+                        return
+                    }
+                    guard let dictionary = try JSONSerialization.jsonObject(with: response.data, options: []) as? [String: Any]  else { return }
+                    // 解析成功响应
+                    if let decodedResponse = BaseResponse<T>.deserialize(from:  dictionary) {
+                        if decodedResponse.downwards == 0 {
+                            DispatchQueue.main.async {
+                                if target.path == "/munarian/attracted" {
+                                    SVProgressHUD.showSuccess(withStatus: decodedResponse.panic)
+                                    SVProgressHUD.dismiss(withDelay: 3.0)
+                                } else {
+                                    SVProgressHUD.dismiss()
+                                }
+                                completion(.success(decodedResponse))
+                            }
+                        } else if decodedResponse.downwards == -2 {
+                            NotificationCenter.default.post(name: Constants.Notifications.switchLogin, object: nil)
+                        }
+                        else  {
+                            if target.path == "/munarian/attracted" {
+                                DispatchQueue.main.async {
+                                    SVProgressHUD.showInfo(withStatus: decodedResponse.panic)
+                                    SVProgressHUD.dismiss(withDelay: 3.0)
+                                }
+                            } else {
+                                let paths = [
+                                    "/munarian/joyous",
+                                    "/munarian/person",
+                                    "/munarian/upright",
+                                    "/munarian/would",
+                                    "/munarian/giant",
+                                    "/munarian/giant",
+                                ]
+                                DispatchQueue.main.async {
+                                    if !paths.contains(target.path) {
+                                        SVProgressHUD.showInfo(withStatus: decodedResponse.panic)
+                                    }
+                                }
+                            }
+                            
+                        }
+                    } else {
+                        DispatchQueue.main.async {
+                            SVProgressHUD.showInfo(withStatus: "Data error")
+                        }
+                        
+                    }
+
+                } catch {
+                    DispatchQueue.main.async {
+                        completion(.failure(NetworkError.decodingFailed(error)))
+                    }
+                }
+                
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    completion(.failure(self.handleMoyaError(error)))
+                }
+            }
+        }
+    }
+    
     /// 发送网络请求并返回原始数据
     /// - Parameters:
     ///   - target: API目标
