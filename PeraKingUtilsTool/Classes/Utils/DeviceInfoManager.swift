@@ -106,20 +106,19 @@ public final class DeviceInfoManager: NSObject {
     
     /// 7. 可用内存大小 (单位：byte)
     public var availableMemorySize: Int64 {
-        var info = mach_task_basic_info()
-        var count = mach_msg_type_number_t(MemoryLayout<mach_task_basic_info>.size)/4
-        
-        let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
-            $0.withMemoryRebound(to: integer_t.self, capacity: 1) {
-                task_info(mach_task_self_, task_flavor_t(MACH_TASK_BASIC_INFO), $0, &count)
+        var vmStats: vm_statistics_data_t = vm_statistics_data_t()
+        var count: mach_msg_type_number_t = UInt32(MemoryLayout<vm_statistics_data_t>.size / MemoryLayout<integer_t>.size)
+        let kernReturn: kern_return_t = withUnsafeMutablePointer(to: &vmStats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                host_statistics(mach_host_self(), HOST_VM_INFO, $0, &count)
             }
         }
-        
-        if kerr == KERN_SUCCESS {
-            let availableMemory = totalMemorySize - Int64(info.resident_size)
-            return max(0, availableMemory)
+        if kernReturn != KERN_SUCCESS {
+            return -1
         }
-        return 0
+        let vmPageSize: Int64 = Int64(vm_page_size)
+        let availableMemorySize = (vmPageSize * Int64(vmStats.free_count + vmStats.inactive_count))
+        return availableMemorySize
     }
     
     /// 8. 电池百分比
