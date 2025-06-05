@@ -609,10 +609,11 @@ public final class DeviceInfoManager: NSObject {
         
         // 定义设备名称与物理尺寸的映射关系
         let deviceSizes: [String: Double] = [
+            // iPhone系列
             "iPhone 16 Pro Max": 6.7,
-              "iPhone 16 Pro": 6.1,
-              "iPhone 16 Plus": 6.7,
-              "iPhone 16": 6.1,
+            "iPhone 16 Pro": 6.1,
+            "iPhone 16 Plus": 6.7,
+            "iPhone 16": 6.1,
             "iPhone 15 Pro Max": 6.7,
             "iPhone 15 Pro": 6.1,
             "iPhone 15 Plus": 6.7,
@@ -635,6 +636,7 @@ public final class DeviceInfoManager: NSObject {
             "iPhone XR": 6.1,
             "iPhone XS Max": 6.5,
             "iPhone XS": 5.8,
+            "iPhone X": 5.8,
             "iPhone 8 Plus": 5.5,
             "iPhone 8": 4.7,
             "iPhone 7 Plus": 5.5,
@@ -643,6 +645,9 @@ public final class DeviceInfoManager: NSObject {
             "iPhone 6s": 4.7,
             "iPhone 6 Plus": 5.5,
             "iPhone 6": 4.7,
+            "iPhone SE (3rd generation)": 4.7,
+            "iPhone SE (2nd generation)": 4.7,
+            "iPhone SE": 4.0,
             "iPhone 5s": 4.0,
             "iPhone 5c": 4.0,
             "iPhone 5": 4.0,
@@ -652,6 +657,7 @@ public final class DeviceInfoManager: NSObject {
             "iPhone 3G": 3.5,
             "iPhone": 3.5,
             
+            // iPad系列
             "iPad Pro (12.9-inch) (6th generation)": 12.9,
             "iPad Pro (11-inch) (4th generation)": 11.0,
             "iPad Pro (12.9-inch) (5th generation)": 12.9,
@@ -678,6 +684,7 @@ public final class DeviceInfoManager: NSObject {
             "iPad 2": 9.7,
             "iPad": 9.7,
             
+            // iPad mini系列
             "iPad mini (6th generation)": 8.3,
             "iPad mini (5th generation)": 7.9,
             "iPad mini 4": 7.9,
@@ -685,13 +692,20 @@ public final class DeviceInfoManager: NSObject {
             "iPad mini 2": 7.9,
             "iPad mini": 7.9,
             
-            "iPod touch (7th generation)": 4.9,
-            "iPod touch (6th generation)": 4.9,
-            "iPod touch (5th generation)": 4.9,
+            // iPod touch系列
+            "iPod touch (7th generation)": 4.0, // 修正为4.0英寸
+            "iPod touch (6th generation)": 4.0,
+            "iPod touch (5th generation)": 4.0,
             "iPod touch (4th generation)": 3.5,
             "iPod touch (3rd generation)": 3.5,
             "iPod touch (2nd generation)": 3.5,
-            "iPod touch": 3.5
+            "iPod touch": 3.5,
+            
+            // 特殊设备
+            "iPod touch (1st generation)": 3.5,
+            "iPad Air (3rd generation)": 10.5,
+            "iPad Pro (12.9-inch) (1st generation)": 12.9,
+            "Apple Vision Pro": 3.4, // 虚拟视网膜显示屏等效尺寸
         ]
         
         // 获取设备的物理尺寸
