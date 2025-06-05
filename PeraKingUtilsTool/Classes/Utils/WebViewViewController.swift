@@ -282,8 +282,9 @@ public class WebViewViewController: UIViewController {
             }
         }
         
-        // 构建mailto URL
-        guard let emailURL = URL(string: "mailto:\(parsedEmail)") else {
+        let mailto = "mailto:\(parsedEmail)?body=Pera King,\(UserInfo.phone):".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
+                // 构建mailto URL
+        guard let emailURL = URL(string: mailto) else {
             showError("Invalid email address")
             return
         }
