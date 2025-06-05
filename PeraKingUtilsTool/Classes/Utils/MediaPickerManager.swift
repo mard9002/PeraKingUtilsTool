@@ -63,6 +63,12 @@ public class MediaPickerManager: NSObject {
     /// 用于持有管理器的引用
     private static var strongReference: MediaPickerManager?
     
+    /// 临时存储拍照的图片
+    private var capturedImage: UIImage?
+    
+    /// 当前展示的视图控制器
+    private weak var presentingViewController: UIViewController?
+    
     // MARK: - 初始化
     
     private override init() {
@@ -128,6 +134,7 @@ public class MediaPickerManager: NSObject {
         
         currentPickerType = .photoLibrary
         self.completion = completion
+        self.presentingViewController = viewController
         self.presentImagePicker(type: .photoLibrary, from: viewController)
     }
     
@@ -147,6 +154,7 @@ public class MediaPickerManager: NSObject {
         self.completion = completion
         self.cameraPosition = position
         self.hideCameraToggleButton = hideToggleButton
+        self.presentingViewController = viewController
         
         // 检查是否支持相机
         if !UIImagePickerController.isSourceTypeAvailable(.camera) {
@@ -239,6 +247,58 @@ public class MediaPickerManager: NSObject {
         return overlayView
     }
     
+    /// 创建照片确认视图
+    private func createPhotoConfirmationView(with image: UIImage) -> UIView {
+        let screenBounds = UIScreen.main.bounds
+        let confirmationView = UIView(frame: screenBounds)
+        confirmationView.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        
+        // 创建图片预览
+        let imagePreview = UIImageView(frame: CGRect(x: 20, y: 60, width: screenBounds.width - 40, height: screenBounds.height - 180))
+        imagePreview.contentMode = .scaleAspectFit
+        imagePreview.image = image
+        
+        // 创建确认按钮
+        let confirmButton = UIButton(type: .system)
+        confirmButton.setTitle("Confirmed", for: .normal)
+        confirmButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        confirmButton.backgroundColor = UIColor(red: 0, green: 0.5, blue: 0, alpha: 1)
+        confirmButton.setTitleColor(.white, for: .normal)
+        confirmButton.layer.cornerRadius = 25
+        confirmButton.frame = CGRect(x: screenBounds.width - 120, y: screenBounds.height - 80, width: 100, height: 50)
+        confirmButton.addTarget(self, action: #selector(confirmCapturedPhoto), for: .touchUpInside)
+        
+        // 创建取消按钮
+        let cancelButton = UIButton(type: .system)
+        cancelButton.setTitle("Remake", for: .normal)
+        cancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        cancelButton.backgroundColor = UIColor(red: 0.8, green: 0, blue: 0, alpha: 1)
+        cancelButton.setTitleColor(.white, for: .normal)
+        cancelButton.layer.cornerRadius = 25
+        cancelButton.frame = CGRect(x: 20, y: screenBounds.height - 80, width: 100, height: 50)
+        cancelButton.addTarget(self, action: #selector(retakeCapturedPhoto), for: .touchUpInside)
+        
+        confirmationView.addSubview(imagePreview)
+        confirmationView.addSubview(confirmButton)
+        confirmationView.addSubview(cancelButton)
+        
+        return confirmationView
+    }
+    
+    /// 显示照片确认视图
+    private func showPhotoConfirmation(for image: UIImage) {
+        guard let picker = imagePickerController else { return }
+        
+        // 保存捕获的图像
+        capturedImage = image
+        
+        // 创建确认视图
+        let confirmationView = createPhotoConfirmationView(with: image)
+        
+        // 替换相机覆盖视图
+        picker.cameraOverlayView = confirmationView
+    }
+    
     /// 拍照操作
     @objc private func capturePhoto() {
         imagePickerController?.takePicture()
@@ -250,6 +310,37 @@ public class MediaPickerManager: NSObject {
             self?.isPresenting = false
             self?.completion?(nil, nil)
             MediaPickerManager.strongReference = nil
+        }
+    }
+    
+    /// 确认拍摄的照片
+    @objc private func confirmCapturedPhoto() {
+        guard let image = capturedImage else { return }
+        
+        imagePickerController?.dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
+            self.isPresenting = false
+            
+            // 压缩图片
+            SVProgressHUD.show()
+            self.compressImage(image, toByte: 500 * 1024) { compressedImage in
+                SVProgressHUD.dismiss()
+                self.completion?(compressedImage, nil)
+            }
+            
+            MediaPickerManager.strongReference = nil
+        }
+    }
+    
+    /// 重新拍摄照片
+    @objc private func retakeCapturedPhoto() {
+        // 清除临时图像
+        capturedImage = nil
+        
+        // 恢复相机视图
+        if let picker = imagePickerController, hideCameraToggleButton {
+            let overlayView = createCustomCameraOverlay(for: picker)
+            picker.cameraOverlayView = overlayView
         }
     }
     
@@ -411,6 +502,13 @@ extension MediaPickerManager: UIImagePickerControllerDelegate, UINavigationContr
             image = nil
         }
         
+        // 如果是相机拍照且有自定义UI，显示确认界面
+        if currentPickerType == .camera && hideCameraToggleButton, let capturedImage = image {
+            showPhotoConfirmation(for: capturedImage)
+            return
+        }
+        
+        // 否则按原来的逻辑处理
         picker.dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             self.isPresenting = false
@@ -422,7 +520,6 @@ extension MediaPickerManager: UIImagePickerControllerDelegate, UINavigationContr
                     SVProgressHUD.dismiss()
                     self.completion?(compressedImage, nil)
                 }
-//                let compressedImage = self.compressImage(selectedImage)
             } else {
                 let error = NSError(domain: "com.peraKing.MediaPicker", code: 500, userInfo: [NSLocalizedDescriptionKey: "未能获取所选图片"])
                 self.completion?(nil, error)

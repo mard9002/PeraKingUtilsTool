@@ -214,10 +214,12 @@
 				TargetAttributes = {
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = 2FXAU7VW4X;
 						LastSwiftMigration = 0900;
 					};
 					607FACE41AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
+						DevelopmentTeam = 2FXAU7VW4X;
 						LastSwiftMigration = 0900;
 						TestTargetID = 607FACCF1AFB9204008FA782;
 					};
@@ -492,6 +494,7 @@
 			baseConfigurationReference = E49DFBFB91FFA9D9D15543DB /* Pods-PeraKingUtilsTool_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 2FXAU7VW4X;
 				INFOPLIST_FILE = PeraKingUtilsTool/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -508,6 +511,7 @@
 			baseConfigurationReference = C58A72FCD35C256A3C9F49AB /* Pods-PeraKingUtilsTool_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = 2FXAU7VW4X;
 				INFOPLIST_FILE = PeraKingUtilsTool/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -523,6 +527,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 86F7BF812B8D93EAB76402C0 /* Pods-PeraKingUtilsTool_Tests.debug.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 2FXAU7VW4X;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
@@ -545,6 +550,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = A83A8F76DEFF1E44BAEF0FE3 /* Pods-PeraKingUtilsTool_Tests.release.xcconfig */;
 			buildSettings = {
+				DEVELOPMENT_TEAM = 2FXAU7VW4X;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
 					"$(inherited)",
